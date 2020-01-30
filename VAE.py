@@ -111,6 +111,8 @@ class nn_():
 
         self.encoder = Model(inputs, [z_mean, z_log_var, z], name='encoder')
         print(self.encoder.summary())
+        # from_keras.utils import plot_model
+        # plot_model(self.encoder, to_file='vae_mlp_encoder.jpg', show_shapes=True)
 
         latent_inputs = Input(shape=(8, ), name='z_sampling')
         x = Dense(32, activation='relu')(latent_inputs)
