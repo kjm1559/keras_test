@@ -1,5 +1,5 @@
 import tensorflow.keras
-from tensorflow.keras.layers import Dense, Input, BatchNormalization, Dropout, Conv1D, Flatten
+from tensorflow.keras.layers import Dense, Input, BatchNormalization, Dropout, Conv2D, Flatten
 from tensorflow.keras.models import Model
 from tensorflow.keras.losses import mse
 from tensorflow.keras.callbacks import ModelCheckpoint
@@ -24,9 +24,16 @@ def shared_model(input_dim, output_dim):
     return Model(inputs, [actor, critic], name='actor_critic')
 
 def shared_model_conv(input_dim, output_dim):
-    inputs = Input(shape=(input_dim, 4), name='encoder_input')    
-    x = Conv1D(16, 8, strides=4, activation='relu')(inputs)
-    x = Conv1D(32, 4, strides=2, activation='relu')(x)
+    inputs = Input(shape=input_dim, name='encoder_input')    
+    x = Conv2D(32, 8, strides=4, activation='relu')(inputs)
+    x = Conv2D(64, 4, strides=3, activation='relu')(x)
+    x = Conv2D(64, 3, strides=1, activation='relu')(x)
+
+    # x = Conv1D(128, 8, strides=2, activation='relu')(x)
+    # x = Conv1D(256, 4, strides=2, activation='relu')(x)
+    # x = Conv1D(512, 4, strides=2, activation='relu')(x)
+    # x = Conv1D(1024, 2, strides=1, activation='relu')(x)
+    
     x = Flatten()(x)
     # x = Dense(1024, activation='relu')(inputs)
     # x = BatchNormalization()(x)
@@ -37,7 +44,7 @@ def shared_model_conv(input_dim, output_dim):
     # x = Dense(128, activation='relu')(x)
     # x = BatchNormalization()(x)
     # x = Dropout(0.25)(x)
-    x = Dense(64, activation='relu')(x)
+    x = Dense(512, activation='relu')(x)
     actor = Dense(output_dim, activation='softmax', name='actor')(x)
     critic = Dense(1, activation='linear', name='critic')(x)
     return Model(inputs, [actor, critic], name='actor_critic')
@@ -78,7 +85,7 @@ class actor_critic:
         # self.actor, self.critic = each_model(self.input_dim, self.out_dim)
 
         # self.adam_optimizer = RMSprop(lr=0.0001, rho=0.99, epsilon=0.01)      
-        self.adam_optimizer = Adam(lr=1.0e-4)
+        self.adam_optimizer = Adam(lr=7e-4)
         self.opt = self.optimizer()
         # self.actor_opt = self.actor_optimizer()
         # self.critic_opt = self.critic_optimizer()
@@ -93,16 +100,18 @@ class actor_critic:
         action = K.placeholder(shape=(None, self.out_dim))
         advantages = K.placeholder(shape=(None,))
         weighted_actions = K.sum(action * actor, axis=1)
-        print(action.shape, actor.shape)
-        # weighted_actions = K.cast(weighted_actions, 'float32')
         eligibility = K.log(weighted_actions + 1e-10) * K.stop_gradient(advantages)        
         entropy = K.sum(actor * K.log(actor + 1e-10), axis=1)
-        entropy = K.mean(entropy)        
-        actor_loss = 1.0e-2 * entropy - K.mean(eligibility)        
+        entropy = K.sum(entropy)        
+        actor_loss = 1.0e-4 * entropy - K.sum(eligibility)
         # actor_loss = 1.0e-4 * entropy - K.cast(K.sum(eligibility), 'float32')
 
         discounted_reward = K.placeholder(shape=(None,))
-        critic_loss = K.mean(K.square(discounted_reward - critic))
+        critic_loss = 0.5 * K.mean(K.square(discounted_reward - critic))
+        # loss = actor_loss + critic_loss
+        # updates = self.adam_optimizer.get_updates(loss=loss, params=self.actor_critic.trainable_weights)
+        # return K.function(inputs=[self.actor_critic.input, action, advantages, discounted_reward], \
+        #                     outputs=loss, updates=updates)
         updates = self.adam_optimizer.get_updates(loss=[actor_loss, critic_loss], params=self.actor_critic.trainable_weights)
         return K.function(inputs=[self.actor_critic.input, action, advantages, discounted_reward], \
                             outputs=[actor_loss, critic_loss], updates=updates)
@@ -118,8 +127,8 @@ class actor_critic:
         weighted_actions = K.sum(action * actor, axis=1)
         eligibility = K.log(weighted_actions + 1e-10) * K.stop_gradient(advantages)
         entropy = K.sum(actor * K.log(actor + 1e-10), axis=1)
-        entropy = K.sum(entropy)
-        actor_loss = (- K.sum(eligibility)) + 1.0e-4 * entropy      
+        # entropy = K.sum(entropy)
+        actor_loss = (- eligibility) + 1.0e-3 * entropy      
 
         # updates = self.adam_optimizer.get_updates(loss=[actor_loss], params=self.actor_critic.trainable_weights)
         # return K.function([self.actor_critic.input, action, advantages], [actor_loss], updates=updates)
@@ -147,14 +156,14 @@ class actor_critic:
         # Compute discounted rewards and Advantage (TD. Error)
         # reshape channel
         states = np.array(states)
-        states = states.reshape(states.shape[0], 4, 84*84)
-        states = np.swapaxes(states, 1, 2)
+        # states = states.reshape(states.shape[0], 4, 84*84)
+        # states = np.swapaxes(states, 1, 2)
         
         discounted_rewards = self.discount(rewards)
         policy, values = self.actor_critic.predict_on_batch(np.array(states))
         # policy, values = self.actor.predict_on_batch(np.array(states)), self.critic.predict_on_batch(np.array(states))
-        advantages = np.array(discounted_rewards) - np.reshape(values, len(values)) / 300
-        discounted_rewards = discounted_rewards / 300        
+        advantages = np.array(discounted_rewards) - np.reshape(values, len(values)) 
+        discounted_rewards = discounted_rewards 
         # print(np.max(states), np.max(actions), np.max(advantages), np.max(discounted_rewards))
         # print(values.tolist())
         # weighted_actions = K.sum(actions * policy, axis=1)
@@ -165,7 +174,7 @@ class actor_critic:
         # print(eligibility.numpy().tolist())
         # print(actor_loss, 1.0e-4 * entropy)
         # discounted_rewards = np.clip(discounted_rewards, -1. ,1.)
-        # print(discounted_rewards.tolist())                
+        # print(max(advantages))
         # Networks optimization
         #   actor_loss = self.actor_opt([states, actions, advantages])
         #   critic_loss = self.critic_opt([states, discounted_rewards])
