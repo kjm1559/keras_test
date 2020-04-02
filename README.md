@@ -14,4 +14,9 @@ There are some machine learning algorithms of simple version by Keras
     - VAE(Variational Autoencoder)    
         - Simple VAE
         - Encode and Decode MNIST case
-
+    - RNN    
+        - Predict sequence data    
+        - Include GRU example     
+        - MNIST data prediction    
+        ![image prediction](./RNN/result_0.gif)![image prediction](./RNN/result_1.gif)![image prediction](./RNN/result_3.gif)![image prediction](./RNN/result_5.gif)![image prediction](./RNN/result_8_positive.gif)    
+        From above, origianl, predict 70% data from 30% original, predict 50% data from 50% original
