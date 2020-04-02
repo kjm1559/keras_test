@@ -98,7 +98,7 @@ class nn_():
 
         # return index_data, data, input_shape, feature_list, feature_max
 
-    def train_(self, df_data, seq_len, model):
+    def train_(self, model):
         """
         데이터를 생성하여 학습을 진행하는 function
         model + '_feature_max.pkl'
@@ -142,7 +142,8 @@ class nn_():
 
         print(train_data[0][0], train_data[1][0])
 
-        # self.train(train_data, label_data, model)
+        
+        self.train(train_data, label_data, model)
         self.model.load_weights('./' + model + '.h5')
 
         sample_index = np.random.randint(10000)
@@ -264,6 +265,6 @@ if __name__ == '__main__':
         except RuntimeError as e:
             # 프로그램 시작시에 메모리 증가가 설정되어야만 합니다
             print(e)
-    pl = pd.read_pickle('~/KBOProject/KBO_Pitcher_List.pkl')
+    
     test = nn_((None, 28), 32, 200)
-    test.train_(pl, 6, 'gru_pitcher_performance_sequence')
+    test.train_('gru_MNIST_sequence')
