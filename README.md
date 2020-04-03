@@ -19,4 +19,10 @@ There are some machine learning algorithms of simple version by Keras
         - Include GRU example     
         - MNIST data prediction    
         ![image prediction](./RNN/result_0.gif)![image prediction](./RNN/result_1.gif)![image prediction](./RNN/result_3.gif)![image prediction](./RNN/result_5.gif)![image prediction](./RNN/result_8_positive.gif)    
-        From above, origianl, predict 70% data from 30% original, predict 50% data from 50% original
+        Top -> bottom : origianl, predict 70% data from 30% original, predict 50% data from 50% original    
+        Left -> right : input, output
+        - IMDB sentimental analysis    
+            - train acc : 94.52%, validation acc : 90.12%
+            - test acc : 90.31%
+            - Number sequence input -> word2vec sequence
+            - Structure : GRU -> attention -> GRU
