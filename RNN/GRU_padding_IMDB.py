@@ -29,21 +29,21 @@ def attention_mechanism(input):
 
 class nn_():
     '''
-    간한한 neural networks class, binary_crossentropy를 loss로 사용하며, adam을 optimization function으로 사용
+    simple neural networks class, loss is binary_crossentropy, adam optimization function
     '''
 
     def __init__(self, input_dim, batch_size, epochs):
         '''
-        nn_을 초기화 하기 위한 함수
+        Init function
 
         Parameters
         ----------
         input_dim : int
-            입력 vector의 차원
+            Dimension of input vector
         batch_size : int
-            Batch의 크기
+            Batch size
         epochs : int
-            epoch 반복 횟수
+            epoch repeat
 
         Example
         -------
@@ -79,7 +79,7 @@ class nn_():
 
     def make_train_data_full_sequence(self, train_data, model):
         """
-        train data를 만들어내는 함수       
+        Create train data   
 
         """
 
@@ -103,7 +103,7 @@ class nn_():
 
     def train_(self, model):
         """
-        데이터를 생성하여 학습을 진행하는 function
+        Create data and train model 
         model + '_feature_max.pkl'
         './models/' + model + '.h5'
         model + '_train_result.pkl'
@@ -111,7 +111,7 @@ class nn_():
         Parameters
         ----------
         df_data : pandas.DataFrame
-            학습을 하기 위한 KBO_Batter_List.pkl or KBO_Pitcher_List.pkl
+            KBO_Batter_List.pkl or KBO_Pitcher_List.pkl for training            
         seq_len : int
             sequence length for learning sequence
         model : string
@@ -159,16 +159,16 @@ class nn_():
 
     def train(self, X_train, y_train, model):
         '''
-        nn_ 모델의 학습 함수
+        Training function of nn_ 
 
         Parameters
         ----------
         X_train : numpy.array
-            학습에 들어갈 input vector
+            input vector
         y_train : numpy.array
-            학습에 사용할 label
+            label
         model : String
-            저장될 모델의 이름
+            model name
 
         Examples
         --------
@@ -215,7 +215,6 @@ if __name__ == '__main__':
         try:
             tf.config.experimental.set_memory_growth(gpus[0], True)
         except RuntimeError as e:
-            # 프로그램 시작시에 메모리 증가가 설정되어야만 합니다
             print(e)
     
     test = nn_((None, 100), 32, 200)
